@@ -1,0 +1,69 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: motionforge
+      POSTGRES_USER: motionforge
+      POSTGRES_PASSWORD: motionforge
+    volumes: [postgres_data:/var/lib/postgresql/data]
+    healthcheck: {test: ["CMD-SHELL", "pg_isready -U motionforge"], interval: 5s, timeout: 3s, retries: 20}
+  redis:
+    image: redis:7-alpine
+    command: redis-server --appendonly yes
+    volumes: [redis_data:/data]
+    healthcheck: {test: ["CMD", "redis-cli", "ping"], interval: 5s, timeout: 3s, retries: 20}
+  minio:
+    image: minio/minio:latest
+    command: server /data --console-address :9001
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-motionforge}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-motionforge-local-password}
+    volumes: [minio_data:/data]
+    ports: ["9000:9000", "9001:9001"]
+    healthcheck: {test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"], interval: 5s, timeout: 3s, retries: 20}
+  api:
+    build: {context: ., dockerfile: apps/api/Dockerfile}
+    env_file: [.env]
+    environment:
+      MOTIONFORGE_DATABASE_URL: postgresql+psycopg://motionforge:motionforge@postgres:5432/motionforge
+      MOTIONFORGE_STORAGE_ROOT: /data/storage
+      MOTIONFORGE_QUEUE_MODE: celery
+    volumes: [app_storage:/data/storage, ./models:/models:ro]
+    ports: ["8000:8000"]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+    healthcheck: {test: ["CMD", "curl", "-f", "http://localhost:8000/ready"], interval: 10s, timeout: 5s, retries: 20}
+  worker:
+    build: {context: ., dockerfile: apps/worker/Dockerfile}
+    env_file: [.env]
+    environment:
+      MOTIONFORGE_DATABASE_URL: postgresql+psycopg://motionforge:motionforge@postgres:5432/motionforge
+      MOTIONFORGE_STORAGE_ROOT: /data/storage
+      MOTIONFORGE_QUEUE_MODE: celery
+    volumes: [app_storage:/data/storage, ./models:/models:ro]
+    depends_on:
+      postgres: {condition: service_healthy}
+      redis: {condition: service_healthy}
+  web:
+    build: {context: ., dockerfile: apps/web/Dockerfile}
+    environment: {NEXT_PUBLIC_API_URL: http://localhost:8000}
+    ports: ["3000:3000"]
+    depends_on:
+      api: {condition: service_healthy}
+  prometheus:
+    image: prom/prometheus:v2.55.1
+    profiles: [monitoring]
+    volumes: [./infra/monitoring/prometheus.yml:/etc/prometheus/prometheus.yml:ro]
+    ports: ["9090:9090"]
+  grafana:
+    image: grafana/grafana:11.4.0
+    profiles: [monitoring]
+    ports: ["3001:3000"]
+    volumes: [grafana_data:/var/lib/grafana]
+volumes:
+  postgres_data: {}
+  redis_data: {}
+  minio_data: {}
+  app_storage: {}
+  grafana_data: {}

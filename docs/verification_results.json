@@ -1,0 +1,30 @@
+{
+  "environment": {
+    "os": "Linux-4.4.0-x86_64-with-glibc2.41",
+    "python": "3.13.5",
+    "node": "v22.16.0",
+    "docker": "unavailable in sandbox"
+  },
+  "workflow": {
+    "session_id": "e03019b9-033c-4337-acd5-65ffa6a7de1e",
+    "job_id": "6f032871-02d2-42d0-844c-2edeed2a5615",
+    "job_state": "completed",
+    "decoded_frames": 96,
+    "analyzed_frames": 32,
+    "valid_pose_frames": 32,
+    "average_landmark_confidence": 1.0,
+    "pose_model": "opencv-color-fiducial-pose",
+    "processing_duration_s": 30.894,
+    "repetitions": 2,
+    "events": 0,
+    "score": 84.52,
+    "pose_artifact": "verification_storage/artifacts/a878d91b-e89f-4481-a990-b0332b5ebc28/e03019b9-033c-4337-acd5-65ffa6a7de1e/pose_sequence.json.gz",
+    "evidence_artifact": "verification_storage/artifacts/a878d91b-e89f-4481-a990-b0332b5ebc28/e03019b9-033c-4337-acd5-65ffa6a7de1e/evidence.jpg",
+    "report_artifact": "verification_storage/reports/a878d91b-e89f-4481-a990-b0332b5ebc28/e03019b9-033c-4337-acd5-65ffa6a7de1e.pdf"
+  },
+  "packaged_artifacts": {
+    "pose_sequence": "docs/verification_artifacts/pose_sequence.json.gz",
+    "evidence": "docs/verification_artifacts/evidence.jpg",
+    "report": "docs/verification_artifacts/analysis_report.pdf"
+  }
+}

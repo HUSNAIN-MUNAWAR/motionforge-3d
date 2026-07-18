@@ -1,0 +1,21 @@
+{
+  "name": "shoulder_raise",
+  "description": "Transparent rule-based shoulder_raise analysis",
+  "version": "1.0.0",
+  "primary_signal": "left_shoulder",
+  "joint_family": "shoulder",
+  "invert": false,
+  "prominence": 12,
+  "min_duration": 0.45,
+  "max_duration": 8.0,
+  "target_range": 70,
+  "max_trunk_inclination": 35,
+  "required_landmarks": [
+    "left_shoulder",
+    "left_elbow",
+    "left_hip",
+    "right_shoulder",
+    "right_elbow",
+    "right_hip"
+  ]
+}

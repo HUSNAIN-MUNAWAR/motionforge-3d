@@ -1,0 +1,21 @@
+{
+  "name": "sit_to_stand",
+  "description": "Transparent rule-based sit_to_stand analysis",
+  "version": "1.0.0",
+  "primary_signal": "left_knee",
+  "joint_family": "knee",
+  "invert": true,
+  "prominence": 15,
+  "min_duration": 0.45,
+  "max_duration": 8.0,
+  "target_range": 45,
+  "max_trunk_inclination": 50,
+  "required_landmarks": [
+    "left_hip",
+    "left_knee",
+    "left_ankle",
+    "right_hip",
+    "right_knee",
+    "right_ankle"
+  ]
+}

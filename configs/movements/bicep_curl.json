@@ -1,0 +1,21 @@
+{
+  "name": "bicep_curl",
+  "description": "Transparent rule-based bicep_curl analysis",
+  "version": "1.0.0",
+  "primary_signal": "left_elbow",
+  "joint_family": "elbow",
+  "invert": false,
+  "prominence": 15,
+  "min_duration": 0.45,
+  "max_duration": 8.0,
+  "target_range": 75,
+  "max_trunk_inclination": 45,
+  "required_landmarks": [
+    "left_shoulder",
+    "left_elbow",
+    "left_wrist",
+    "right_shoulder",
+    "right_elbow",
+    "right_wrist"
+  ]
+}
