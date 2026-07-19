@@ -22,7 +22,7 @@ Movement analysis software often hides too much of the pipeline: model confidenc
 - PostgreSQL-ready SQLAlchemy schema with Alembic migrations and SQLite support for local development and tests.
 - Validated MP4/MOV ingestion with generated storage names, byte limits, decode checks, video metadata, hashes, duplicate detection, and duration limits.
 - Persisted processing jobs with Celery/Redis support in Docker and a database-polling worker for lower-dependency local workflows.
-- MoveNet ONNX pose-estimator adapter using OpenCV DNN plus a SHA-256-pinned model downloader.
+- MoveNet ONNX pose-estimator adapter using ONNX Runtime CPU execution plus a SHA-256-pinned model downloader.
 - Deterministic OpenCV color-fiducial estimator for CI and sandbox verification. It performs real pixel segmentation and is not presented as a general human model.
 - Pose tracking, One Euro and EMA filters, compressed pose artifacts, evidence overlays, coverage metrics, confidence metrics, and frame-level data export.
 - Joint-angle geometry, timestamp-aware derivatives, ROM summaries, symmetry metrics, repetition detection, deterministic rules, and explainable scoring.
@@ -34,17 +34,64 @@ Movement analysis software often hides too much of the pipeline: model confidenc
 
 ## Screenshots
 
-The screenshots below are checked into `docs/screenshots/` and are generated from the application and packaged demo artifacts. They use synthetic controlled-fixture data and do not contain secrets or private media.
+The screenshots below are checked into `docs/screenshots/` and are generated from the running application or reports produced by the backend. The public dataset screenshots use a CC BY 3.0 Wikimedia Commons squat video attributed to FitnessScape and do not contain secrets, tokens, private media, or customer records.
 
-| Overview | Controlled Analysis |
+| Public Dataset Preview | Interactive Analysis Workspace |
 | --- | --- |
-| ![MotionForge 3D overview](docs/screenshots/landing.png) | ![Controlled squat analysis preview](docs/screenshots/analysis-preview.png) |
+| ![MoveNet public dataset preview](docs/screenshots/public-dataset-preview.png) | ![Public dataset analysis workspace](docs/screenshots/public-dataset-analysis-workspace.png) |
 
-| Secure Workspace | PDF Report |
+| Generated PDF Report | Product Overview |
 | --- | --- |
-| ![Secure workspace login](docs/screenshots/login.png) | ![Generated movement analysis PDF](docs/screenshots/pdf-report.png) |
+| ![Public dataset PDF report](docs/screenshots/public-dataset-pdf-report.png) | ![MotionForge 3D overview](docs/screenshots/landing.png) |
 
 See [docs/screenshots/README.md](docs/screenshots/README.md) for screenshot provenance.
+
+## Public Dataset Demo
+
+MotionForge 3D includes a reproducible public-dataset workflow built around a small, openly licensed exercise video.
+
+- **Dataset:** Squat - exercise demonstration video
+- **Publisher/host:** Wikimedia Commons
+- **Author attribution:** FitnessScape
+- **Source:** <https://commons.wikimedia.org/wiki/File:Squat_-_exercise_demonstration_video.webm>
+- **License:** Creative Commons Attribution 3.0 Unported
+- **Committed sample:** `data/sample/wikimedia-squat/squat-exercise-demonstration.webm`
+- **Sample size:** 564,942 bytes, 213 frames, 1280 x 720, 30 FPS, 7.1 seconds
+
+The sample is used only as public demo data. It is not a customer record, patient record, clinical dataset, benchmark evaluation, or production deployment.
+
+Reproduce the public dataset demo:
+
+```bash
+python scripts/models/download_movenet.py --output models/movenet-singlepose-lightning.onnx
+PYTHONPATH=.:apps/api python scripts/datasets/download_wikimedia_squat.py
+PYTHONPATH=.:apps/api python scripts/datasets/run_wikimedia_squat_demo.py
+```
+
+The latest run generated:
+
+- Decoded frames: 213
+- Analyzed frames: 27
+- Valid pose frames: 27
+- Average landmark confidence: 0.5372
+- Repetitions detected: 2
+- Generated rule events: 0
+- Explainable score: 80.08
+- Processing duration: 47.574 seconds
+- Runtime: ONNX Runtime 1.27.0
+
+Generated outputs:
+
+- `docs/public_dataset_results.json`
+- `docs/public_dataset_artifacts/pose_sequence.json.gz`
+- `docs/public_dataset_artifacts/evidence.jpg`
+- `docs/public_dataset_artifacts/public_dataset_report.pdf`
+- `apps/web/public/demo/analysis.json`
+- `apps/web/public/demo/pose.json`
+- `apps/web/public/demo/evidence.jpg`
+- `apps/web/public/demo/video.webm`
+
+See [docs/DATASET.md](docs/DATASET.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for license, attribution, transformations, and ethical notes.
 
 ## Architecture
 
@@ -199,6 +246,8 @@ MotionForge 3D does not expose a packaged end-user CLI yet. Operational scripts 
 ```bash
 PYTHONPATH=.:apps/api python scripts/bootstrap/seed.py
 PYTHONPATH=.:apps/api python scripts/demo/generate_marker_video.py
+PYTHONPATH=.:apps/api python scripts/datasets/download_wikimedia_squat.py
+PYTHONPATH=.:apps/api python scripts/datasets/run_wikimedia_squat_demo.py
 PYTHONPATH=.:apps/api python scripts/verification/verify_e2e.py
 python scripts/models/download_movenet.py
 ```
@@ -214,6 +263,7 @@ python -m mypy apps packages
 python -m pytest -q
 PYTHONPATH=.:apps/api alembic upgrade head
 PYTHONPATH=.:apps/api python scripts/verification/verify_e2e.py
+PYTHONPATH=.:apps/api python scripts/datasets/run_wikimedia_squat_demo.py
 ```
 
 Frontend:
@@ -287,6 +337,7 @@ Contributions are welcome when they keep the project evidence-driven and reprodu
 ## Attribution
 
 - MoveNet model files are downloaded separately from the Xenova/MoveNet ONNX repository and retain upstream Apache-2.0 terms.
+- The Wikimedia Commons squat sample is attributed to FitnessScape and licensed under Creative Commons Attribution 3.0 Unported.
 - Motion analytics, verification fixtures, screenshots, and report artifacts in this repository are generated by the project workflow unless otherwise noted.
 - Third-party runtime libraries are listed in `pyproject.toml` and `apps/web/package.json`.
 

@@ -1,5 +1,5 @@
 PYTHONPATH := .:apps/api
-.PHONY: setup dev up down migrate seed test test-unit test-integration test-e2e lint format typecheck verify demo clean model
+.PHONY: setup dev up down migrate seed test test-unit test-integration test-e2e lint format typecheck verify demo clean model download-data public-demo
 setup:
 	python3 -m venv .venv && .venv/bin/pip install -e '.[postgres,queue,storage,dev]'
 dev:
@@ -32,6 +32,10 @@ demo:
 	PYTHONPATH=$(PYTHONPATH) python scripts/demo/generate_marker_video.py
 model:
 	python scripts/models/download_movenet.py
+download-data:
+	PYTHONPATH=$(PYTHONPATH) python scripts/datasets/download_wikimedia_squat.py
+public-demo:
+	PYTHONPATH=$(PYTHONPATH) python scripts/datasets/run_wikimedia_squat_demo.py
 clean:
 	find . -type d -name __pycache__ -prune -exec rm -rf {} +
-	rm -rf .pytest_cache .mypy_cache .ruff_cache apps/web/.next verification_storage verification.db
+	rm -rf .pytest_cache .mypy_cache .ruff_cache apps/web/.next verification_storage verification.db public_dataset_demo_storage public_dataset_demo.db

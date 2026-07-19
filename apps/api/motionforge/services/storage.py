@@ -6,7 +6,7 @@ import cv2
 from fastapi import UploadFile
 from ..config import get_settings
 
-ALLOWED = {"video/mp4", "video/quicktime", "application/octet-stream"}
+ALLOWED = {"video/mp4", "video/quicktime", "video/webm", "application/octet-stream"}
 
 
 def sha256_file(path: Path) -> str:
@@ -20,8 +20,8 @@ def sha256_file(path: Path) -> str:
 def save_upload(file: UploadFile, organization_id: str, session_id: str) -> tuple[Path, dict]:
     s = get_settings()
     suffix = Path(file.filename or "video.mp4").suffix.lower()
-    if suffix not in {".mp4", ".mov"}:
-        raise ValueError("Only MP4 and MOV files are accepted")
+    if suffix not in {".mp4", ".mov", ".webm"}:
+        raise ValueError("Only MP4, MOV, and WebM files are accepted")
     if file.content_type not in ALLOWED:
         raise ValueError("Unsupported MIME type")
     target = s.storage_root / "uploads" / organization_id / session_id / f"{uuid4().hex}{suffix}"

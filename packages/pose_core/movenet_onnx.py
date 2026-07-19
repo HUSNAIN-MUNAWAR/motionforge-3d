@@ -39,7 +39,21 @@ class MoveNetONNXPoseEstimator(PoseEstimator):
         self.path = Path(model_path)
         if not self.path.exists():
             raise FileNotFoundError(f"MoveNet model not found: {self.path}")
-        self.net = cv2.dnn.readNetFromONNX(str(self.path))
+        self.session: Any | None = None
+        self.net: Any | None = None
+        self.input_name = ""
+        self.input_type = ""
+        try:
+            import onnxruntime as ort
+
+            self.session = ort.InferenceSession(str(self.path), providers=["CPUExecutionProvider"])
+            model_input = self.session.get_inputs()[0]
+            self.input_name = model_input.name
+            self.input_type = model_input.type
+            self.runtime = f"ONNX Runtime {ort.__version__}"
+        except Exception:
+            self.net = cv2.dnn.readNetFromONNX(str(self.path))
+            self.runtime = f"OpenCV DNN {cv2.__version__}"
         self.threshold = confidence_threshold
         self._hash = hashlib.sha256(self.path.read_bytes()).hexdigest()
 
@@ -48,7 +62,7 @@ class MoveNetONNXPoseEstimator(PoseEstimator):
         return PoseModelMetadata(
             name="MoveNet SinglePose Lightning",
             version="onnx-main",
-            runtime=f"OpenCV DNN {cv2.__version__}",
+            runtime=self.runtime,
             input_size=(192, 192),
             model_hash=self._hash,
             mode="single_person",
@@ -61,17 +75,22 @@ class MoveNetONNXPoseEstimator(PoseEstimator):
         h, w = frame_bgr.shape[:2]
         rgb = cv2.cvtColor(frame_bgr, cv2.COLOR_BGR2RGB)
         resized = cv2.resize(rgb, (192, 192), interpolation=cv2.INTER_LINEAR)
-        blob = resized.astype(np.float32)[None, ...]
-        # Accommodate NHWC or NCHW exports.
-        input_shape = None
-        if hasattr(self.net, "getInputDetails"):
-            details = cast(Any, self.net).getInputDetails()
-            if details:
-                input_shape = getattr(details[0], "shape", None)
-        if input_shape and len(input_shape) == 4 and input_shape[1] == 3:
-            blob = np.transpose(blob, (0, 3, 1, 2))
-        self.net.setInput(blob)
-        out = np.asarray(self.net.forward()).reshape(-1, 3)
+        if self.session is not None:
+            dtype = np.int32 if "int32" in self.input_type else np.float32
+            blob = resized.astype(dtype)[None, ...]
+            out = np.asarray(self.session.run(None, {self.input_name: blob})[0]).reshape(-1, 3)
+        else:
+            blob = resized.astype(np.float32)[None, ...]
+            # Accommodate NHWC or NCHW exports.
+            input_shape = None
+            if self.net is not None and hasattr(self.net, "getInputDetails"):
+                details = cast(Any, self.net).getInputDetails()
+                if details:
+                    input_shape = getattr(details[0], "shape", None)
+            if input_shape and len(input_shape) == 4 and input_shape[1] == 3:
+                blob = np.transpose(blob, (0, 3, 1, 2))
+            self.net.setInput(blob)
+            out = np.asarray(self.net.forward()).reshape(-1, 3)
         if out.shape[0] < 17:
             return []
         landmarks: dict[str, PoseLandmark] = {}

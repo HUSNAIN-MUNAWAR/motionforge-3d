@@ -26,5 +26,9 @@ models/*.onnx
 models/*.pt
 verification_storage/
 verification.db
+public_dataset_demo_storage/
+public_dataset_check_storage/
+public_dataset_demo.db
+public_dataset_check.db
 test_api.db
 docker-data/

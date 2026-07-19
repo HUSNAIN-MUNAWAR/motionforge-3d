@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-07-19T06:54:06.368121+00:00",
+  "dataset": {
+    "name": "Squat - exercise demonstration video",
+    "publisher": "Wikimedia Commons",
+    "author": "FitnessScape",
+    "source": "https://commons.wikimedia.org/wiki/File:Squat_-_exercise_demonstration_video.webm",
+    "license": "Creative Commons Attribution 3.0 Unported",
+    "sha256": "2440985661c3533a4ce78472b0f4577dbdf023aff3f8f9a225bbb5ff8071b1e9",
+    "file": "data/sample/wikimedia-squat/squat-exercise-demonstration.webm",
+    "size_bytes": 564942,
+    "format": "WebM VP9",
+    "fps": 30.0,
+    "frame_count": 213,
+    "width": 1280,
+    "height": 720,
+    "duration_s": 7.1
+  },
+  "workflow": {
+    "processing_duration_s": 47.574,
+    "job_state": "completed",
+    "pose_model": "MoveNet SinglePose Lightning",
+    "runtime": "ONNX Runtime 1.27.0",
+    "decoded_frames": 213,
+    "analyzed_frames": 27,
+    "valid_pose_frames": 27,
+    "average_landmark_confidence": 0.5372,
+    "repetitions": 2,
+    "events": 0,
+    "score": 80.08
+  },
+  "artifacts": {
+    "pose_sequence": "docs/public_dataset_artifacts/pose_sequence.json.gz",
+    "evidence": "docs/public_dataset_artifacts/evidence.jpg",
+    "report": "docs/public_dataset_artifacts/public_dataset_report.pdf",
+    "web_analysis": "apps/web/public/demo/analysis.json",
+    "web_pose": "apps/web/public/demo/pose.json",
+    "web_video": "apps/web/public/demo/video.webm"
+  }
+}

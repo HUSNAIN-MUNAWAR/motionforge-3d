@@ -65,11 +65,12 @@ The executed estimator is the controlled OpenCV color-fiducial adapter. It recov
 - PDF report: `docs/verification_artifacts/analysis_report.pdf`
 - Machine-readable result: `docs/verification_results.json`
 - Landing screenshot: `docs/screenshots/landing.png`
-- Verified-analysis preview: `docs/screenshots/analysis-preview.png`
 - Login screenshot: `docs/screenshots/login.png`
-- PDF report screenshot: `docs/screenshots/pdf-report.png`
+- Public dataset preview screenshot: `docs/screenshots/public-dataset-preview.png`
+- Public dataset analysis workspace screenshot: `docs/screenshots/public-dataset-analysis-workspace.png`
+- Public dataset PDF report screenshot: `docs/screenshots/public-dataset-pdf-report.png`
 
-The web screenshots were rendered from the running Next.js production server. The analysis preview route reads the same persisted pose and analytics artifacts as the interactive workspace. Because Chromium navigation was restricted by the sandbox administrator, printable screenshots were rendered through WeasyPrint; no screenshot was manually painted or fabricated.
+The current README screenshots are rendered from the running Next.js production server or from generated backend PDF output. The public dataset screenshots use the MoveNet artifacts documented in `docs/DATASET.md`; no screenshot was manually painted or fabricated.
 
 ## Triangulation verification
 
@@ -80,12 +81,12 @@ A known-camera test projects a known 3D point into two calibrated views, reconst
 Implemented and type-checked:
 
 - `MoveNetONNXPoseEstimator`
-- OpenCV DNN preprocessing and postprocessing
+- ONNX Runtime CPU preprocessing and postprocessing
 - model hash and metadata persistence
 - SHA-256-pinned downloader
 - production configuration defaults to `movenet`
 
-The MoveNet ONNX binary itself was not executed because outbound binary download access was unavailable in the sandbox. The repository does not substitute the controlled fixture adapter for the normal production configuration.
+The MoveNet ONNX binary is exercised by the public dataset demo documented in `docs/DATASET.md`. The controlled fixture adapter remains available for deterministic CI verification and does not substitute for the normal production configuration.
 
 ## Docker status
 
@@ -96,5 +97,5 @@ The Compose stack, service Dockerfiles, health checks, non-root runtime users, P
 - Full chessboard and ChArUco capture UI is not implemented; calibration persistence, geometric triangulation, reprojection calculations, API records, and tests are implemented.
 - Local protected artifact storage is the executed path. MinIO is included in Compose, but the full signed-URL MinIO adapter remains an extension point.
 - Refresh-token rotation, MFA/SSO, legal holds, automatic retention deletion, full annotated MP4 generation, and learned multi-person tracking are not claimed complete.
-- The interactive workspace supports source video, pose data, evidence, synchronized timeline cursor, and React Three Fiber playback. The screenshot uses the server-rendered printable preview because browser automation was restricted.
+- The interactive workspace supports source video, pose data, evidence, synchronized timeline cursor, and React Three Fiber playback. Current public dataset screenshots are captured from the running Next.js production server.
 - Medical diagnosis and millimeter-accurate monocular measurement are explicitly out of scope.
