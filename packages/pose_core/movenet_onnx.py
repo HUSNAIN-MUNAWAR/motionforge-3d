@@ -80,17 +80,20 @@ class MoveNetONNXPoseEstimator(PoseEstimator):
             blob = resized.astype(dtype)[None, ...]
             out = np.asarray(self.session.run(None, {self.input_name: blob})[0]).reshape(-1, 3)
         else:
+            net = self.net
+            if net is None:
+                raise RuntimeError("MoveNet inference backend was not initialized")
             blob = resized.astype(np.float32)[None, ...]
             # Accommodate NHWC or NCHW exports.
             input_shape = None
-            if self.net is not None and hasattr(self.net, "getInputDetails"):
-                details = cast(Any, self.net).getInputDetails()
+            if hasattr(net, "getInputDetails"):
+                details = cast(Any, net).getInputDetails()
                 if details:
                     input_shape = getattr(details[0], "shape", None)
             if input_shape and len(input_shape) == 4 and input_shape[1] == 3:
                 blob = np.transpose(blob, (0, 3, 1, 2))
-            self.net.setInput(blob)
-            out = np.asarray(self.net.forward()).reshape(-1, 3)
+            net.setInput(blob)
+            out = np.asarray(net.forward()).reshape(-1, 3)
         if out.shape[0] < 17:
             return []
         landmarks: dict[str, PoseLandmark] = {}
