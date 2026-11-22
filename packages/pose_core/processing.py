@@ -1,4 +1,5 @@
 from __future__ import annotations
+import csv
 import gzip
 import json
 from pathlib import Path
@@ -97,6 +98,8 @@ def process_video(
     sample_fps: float = 8.0,
     max_frames: int | None = None,
     progress=None,
+    annotated_output: str | Path | None = None,
+    trace_output: str | Path | None = None,
 ) -> dict:
     video_path = Path(video_path)
     artifact_dir = Path(artifact_dir)
@@ -110,9 +113,27 @@ def process_video(
     stride = max(1, round(source_fps / sample_fps))
     tracker = CentroidTracker()
     raw = []
+    trace_rows: list[dict[str, object]] = []
     analyzed = 0
     decoded = 0
     evidence_path = None
+    annotated_path = Path(annotated_output) if annotated_output else None
+    trace_path = Path(trace_output) if trace_output else None
+    writer = None
+    if annotated_path:
+        annotated_path.parent.mkdir(parents=True, exist_ok=True)
+        width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
+        height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
+        output_fps = source_fps if source_fps > 0 else 30.0
+        writer = cv2.VideoWriter(
+            str(annotated_path),
+            cv2.VideoWriter_fourcc(*"mp4v"),
+            output_fps,
+            (width, height),
+        )
+        if not writer.isOpened():
+            cap.release()
+            raise RuntimeError(f"Could not open annotated video writer: {annotated_path}")
     while True:
         ok, frame = cap.read()
         if not ok:
@@ -120,6 +141,8 @@ def process_video(
         idx = decoded
         decoded += 1
         if idx % stride:
+            if writer is not None:
+                writer.write(frame)
             continue
         ts = idx / source_fps
         detections = tracker.assign(estimator.estimate(frame, idx, ts), idx)
@@ -127,14 +150,50 @@ def process_video(
             primary = max(detections, key=lambda d: d.score)
             raw.append(primary)
             analyzed += 1
+            trace_rows.append(
+                {
+                    "frame_index": primary.frame_index,
+                    "timestamp_s": round(primary.timestamp_s, 6),
+                    "track_id": primary.track_id,
+                    "score": round(primary.score, 6),
+                    "landmark_count": len(primary.landmarks),
+                    "bbox_x_min": round(primary.bbox[0], 6) if primary.bbox else "",
+                    "bbox_y_min": round(primary.bbox[1], 6) if primary.bbox else "",
+                    "bbox_x_max": round(primary.bbox[2], 6) if primary.bbox else "",
+                    "bbox_y_max": round(primary.bbox[3], 6) if primary.bbox else "",
+                }
+            )
             if evidence_path is None:
                 evidence_path = artifact_dir / "evidence.jpg"
                 cv2.imwrite(str(evidence_path), draw_overlay(frame, primary))
+            if writer is not None:
+                writer.write(draw_overlay(frame, primary))
+        elif writer is not None:
+            writer.write(frame)
         if progress:
             progress(min(80, int(80 * decoded / max(1, frame_count))), "running_pose_estimation")
         if max_frames and analyzed >= max_frames:
             break
     cap.release()
+    if writer is not None:
+        writer.release()
+    if trace_path:
+        trace_path.parent.mkdir(parents=True, exist_ok=True)
+        fields = [
+            "frame_index",
+            "timestamp_s",
+            "track_id",
+            "score",
+            "landmark_count",
+            "bbox_x_min",
+            "bbox_y_min",
+            "bbox_x_max",
+            "bbox_y_max",
+        ]
+        with trace_path.open("w", newline="", encoding="utf-8") as fh:
+            writer_csv = csv.DictWriter(fh, fieldnames=fields)
+            writer_csv.writeheader()
+            writer_csv.writerows(trace_rows)
     if not raw:
         raise RuntimeError("No pose detected in sampled frames")
     filtered = smooth_sequence(raw)
@@ -167,5 +226,8 @@ def process_video(
         "filtered": filtered,
         "pose_path": str(pose_path),
         "evidence_path": str(evidence_path) if evidence_path else None,
+        "annotated_path": str(annotated_path) if annotated_path else None,
+        "trace_path": str(trace_path) if trace_path else None,
+        "trace_rows": trace_rows,
         "quality": quality,
     }

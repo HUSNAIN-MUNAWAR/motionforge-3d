@@ -1,0 +1,82 @@
+{
+  "generated_at": "2026-11-22T19:11:09.129271+00:00",
+  "environment": {
+    "os": "Windows-11-10.0.22631-SP0",
+    "python": "3.12.10",
+    "opencv": "4.13.0"
+  },
+  "source": {
+    "dataset": "Wikimedia Commons squat exercise demonstration video",
+    "publisher": "Wikimedia Commons",
+    "author": "FitnessScape",
+    "license": "Creative Commons Attribution 3.0 Unported",
+    "url": "https://commons.wikimedia.org/wiki/File:Squat_-_exercise_demonstration_video.webm",
+    "file": "data/sample/wikimedia-squat/squat-exercise-demonstration.webm",
+    "sha256": "2440985661c3533a4ce78472b0f4577dbdf023aff3f8f9a225bbb5ff8071b1e9",
+    "metadata": {
+      "fps": 30.0,
+      "frames": 213,
+      "width": 1280,
+      "height": 720,
+      "duration_s": 7.1
+    }
+  },
+  "model": {
+    "name": "MoveNet SinglePose Lightning",
+    "version": "onnx-main",
+    "runtime": "ONNX Runtime 1.27.0",
+    "input_size": [
+      192,
+      192
+    ],
+    "model_sha256": "1ad4f8d6c2f776a9967db3993c9ca740bc350104f9d37c151dc183fc29a464ad",
+    "backend": "ONNX Runtime CPUExecutionProvider",
+    "path": "models/movenet-singlepose-lightning.onnx"
+  },
+  "pipeline": {
+    "sample_fps": 4.0,
+    "decoded_frames": 213,
+    "analyzed_frames": 27,
+    "valid_pose_frames": 27,
+    "average_landmark_confidence": 0.5372,
+    "processing_duration_s": 7.498,
+    "processing_fps": 28.408,
+    "repetitions": 2,
+    "events": 0,
+    "score": 80.08,
+    "encoded_output": {
+      "frames": 213,
+      "fps": 30.0,
+      "width": 1280,
+      "height": 720
+    }
+  },
+  "artifacts": {
+    "annotated_video": {
+      "path": "docs/runtime_evidence/movenet-squat-runtime.mp4",
+      "bytes": 2569839,
+      "sha256": "3ac5a36e80c626cd96f763f98f1fafc50b7146a75ed71ea8a3d07a1ac3115357"
+    },
+    "poster": {
+      "path": "docs/runtime_evidence/movenet-squat-runtime-poster.jpg",
+      "bytes": 125636,
+      "sha256": "12815d05ba5439c7445f629611fd32fdb454c0979dc51b1ea4062ce978122bce"
+    },
+    "frame_trace": {
+      "path": "docs/runtime_evidence/movenet-squat-runtime-trace.csv",
+      "bytes": 1756,
+      "sha256": "edb86e0c147725187fd9ad7c9790f0f93203f35f0b996aa68396f317af854fbf"
+    },
+    "pose_sequence": {
+      "path": "docs/runtime_evidence/movenet-squat-pose-sequence.json.gz",
+      "bytes": 18774,
+      "sha256": "d18c74eed57b1efb7220e3e70d9f77db54c5b52363f77abff16f9f99c3b89dd3"
+    }
+  },
+  "claim_boundary": [
+    "This is a real MoveNet SinglePose Lightning inference run over decoded Wikimedia video pixels.",
+    "The overlay contains only landmarks emitted by the model at sampled frames; unsampled frames remain unannotated source pixels.",
+    "The output is single-person, camera-relative 2D pose analytics, not metric 3D reconstruction or medical diagnosis.",
+    "No manual detections, painted screenshots, fabricated metrics, or model training are used."
+  ]
+}

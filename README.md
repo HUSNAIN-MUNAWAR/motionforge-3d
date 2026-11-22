@@ -93,6 +93,28 @@ Generated outputs:
 
 See [docs/DATASET.md](docs/DATASET.md) and [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for license, attribution, transformations, and ethical notes.
 
+## Measured MoveNet Runtime Animation
+
+The repository also includes a real, locally reproducible runtime capture of the public squat sample. It runs the pinned MoveNet SinglePose Lightning ONNX model through ONNX Runtime on decoded video pixels, writes the model overlay into an MP4, and records the sampled detections in a CSV trace. The model binary is downloaded separately and is not committed.
+
+Reproduce it after installing the project dependencies:
+
+```powershell
+py scripts/models/download_movenet.py --output models/movenet-singlepose-lightning.onnx
+py scripts/datasets/download_wikimedia_squat.py
+py scripts/verification/generate_movenet_runtime_evidence.py
+```
+
+Measured local run (Windows 11, Python 3.12.10, ONNX Runtime 1.27.0, CPU): 213 decoded frames, 27 valid MoveNet pose frames, mean landmark confidence `0.5372`, 2 squat repetitions, score `80.08`, and a 213-frame 1280x720 annotated MP4. The model SHA-256 was `1ad4f8d6c2f776a9967db3993c9ca740bc350104f9d37c151dc183fc29a464ad`.
+
+- [Annotated runtime video](docs/runtime_evidence/movenet-squat-runtime.mp4)
+- [Runtime poster](docs/runtime_evidence/movenet-squat-runtime-poster.jpg)
+- [Frame-level detection trace](docs/runtime_evidence/movenet-squat-runtime-trace.csv)
+- [Pose sequence](docs/runtime_evidence/movenet-squat-pose-sequence.json.gz)
+- [Hashable runtime summary and claim boundary](docs/runtime_evidence/movenet-squat-runtime-summary.json)
+
+Only sampled frames receive model overlays; unsampled frames remain the decoded source frames. This is single-person, camera-relative 2D pose analytics, not metric 3D reconstruction or medical diagnosis. See [docs/runtime_evidence/README.md](docs/runtime_evidence/README.md) for artifact provenance.
+
 ## Architecture
 
 ```mermaid
