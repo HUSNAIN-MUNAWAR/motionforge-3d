@@ -127,7 +127,7 @@ def process_video(
         output_fps = source_fps if source_fps > 0 else 30.0
         writer = cv2.VideoWriter(
             str(annotated_path),
-            cv2.VideoWriter_fourcc(*"mp4v"),
+            getattr(cv2, "VideoWriter_fourcc")(*"mp4v"),
             output_fps,
             (width, height),
         )
