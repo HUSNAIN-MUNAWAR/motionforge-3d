@@ -90,6 +90,12 @@ def draw_overlay(frame: np.ndarray, pose: PoseFrameResult) -> np.ndarray:
     return out
 
 
+def _write_evidence_image(path: Path, image: np.ndarray) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if not cv2.imwrite(str(path), image):
+        raise RuntimeError(f"Could not write pose evidence image: {path}")
+
+
 def process_video(
     video_path: str | Path,
     estimator: PoseEstimator,
@@ -124,6 +130,9 @@ def process_video(
         annotated_path.parent.mkdir(parents=True, exist_ok=True)
         width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH) or 0)
         height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT) or 0)
+        if width <= 0 or height <= 0:
+            cap.release()
+            raise RuntimeError(f"Video has invalid dimensions: {video_path}")
         output_fps = source_fps if source_fps > 0 else 30.0
         writer = cv2.VideoWriter(
             str(annotated_path),
@@ -165,7 +174,7 @@ def process_video(
             )
             if evidence_path is None:
                 evidence_path = artifact_dir / "evidence.jpg"
-                cv2.imwrite(str(evidence_path), draw_overlay(frame, primary))
+                _write_evidence_image(evidence_path, draw_overlay(frame, primary))
             if writer is not None:
                 writer.write(draw_overlay(frame, primary))
         elif writer is not None:
